@@ -8,9 +8,9 @@ let router = express.Router();
 // Listado general
 router.get('/', (req, res) => {
     Libro.find().then(resultado => {
-        res.render('libros_listado', { libros: resultado});
-    }).catch (error => {
-    }); 
+        res.render('libros_listado', { libros: resultado });
+    }).catch(error => {
+    });
 });
 
 // Formulario de nuevo libro
@@ -22,12 +22,12 @@ router.get('/nuevo', auth.autenticacion, (req, res) => {
 router.get('/editar/:id', auth.autenticacion, (req, res) => {
     Libro.findById(req.params['id']).then(resultado => {
         if (resultado) {
-            res.render('libros_editar', {libro: resultado});
+            res.render('libros_editar', { libro: resultado });
         } else {
-            res.render('error', {error: "Libro no encontrado"});
+            res.render('error', { error: "Libro no encontrado" });
         }
     }).catch(error => {
-        res.render('error', {error: "Libro no encontrado"});
+        res.render('error', { error: "Libro no encontrado" });
     });
 });
 
@@ -35,11 +35,11 @@ router.get('/editar/:id', auth.autenticacion, (req, res) => {
 router.get('/:id', (req, res) => {
     Libro.findById(req.params.id).then(resultado => {
         if (resultado)
-            res.render('libros_ficha', { libro: resultado});
-        else    
-            res.render('error', {error: "Libro no encontrado"});
-    }).catch (error => {
-    }); 
+            res.render('libros_ficha', { libro: resultado });
+        else
+            res.render('error', { error: "Libro no encontrado" });
+    }).catch(error => {
+    });
 });
 
 // Insertar libros
@@ -58,16 +58,14 @@ router.post('/', auth.autenticacion, upload.upload.single('portada'), (req, res)
         let errores = {
             general: 'Error insertando libro'
         };
-        if(error.errors.titulo)
-        {
+        if (error.errors.titulo) {
             errores.titulo = error.errors.titulo.message;
         }
-        if(error.errors.precio)
-        {
+        if (error.errors.precio) {
             errores.precio = error.errors.precio.message;
         }
 
-        res.render('libros_nuevo', {errores: errores, datos: req.body});
+        res.render('libros_nuevo', { errores: errores, datos: req.body });
     });
 });
 
@@ -76,7 +74,7 @@ router.delete('/:id', auth.autenticacion, (req, res) => {
     Libro.findByIdAndRemove(req.params.id).then(resultado => {
         res.redirect(req.baseUrl);
     }).catch(error => {
-        res.render('error', {error: "Error borrando libro"});
+        res.render('error', { error: "Error borrando libro" });
     });
 });
 
@@ -85,13 +83,12 @@ router.delete('/:id', auth.autenticacion, (req, res) => {
 router.post('/:id', auth.autenticacion, upload.upload.single('portada'), (req, res) => {
     // Buscamos el libro y cambiamos sus datos
     Libro.findById(req.params.id).then(resultado => {
-        if (resultado)
-        {
+        if (resultado) {
             resultado.titulo = req.body.titulo;
             resultado.editorial = req.body.editorial;
             resultado.precio = req.body.precio;
             // Si viene una portada, la cambiamos
-            if(req.file)
+            if (req.file)
                 resultado.portada = req.file.filename;
             resultado.save().then(resultado2 => {
                 res.redirect(req.baseUrl);
@@ -99,25 +96,27 @@ router.post('/:id', auth.autenticacion, upload.upload.single('portada'), (req, r
                 let errores = {
                     general: 'Error editando libro'
                 };
-                if(error2.errors.titulo)
-                {
+                if (error2.errors.titulo) {
                     errores.titulo = error2.errors.titulo.message;
                 }
-                if(error2.errors.precio)
-                {
+                if (error2.errors.precio) {
                     errores.precio = error2.errors.precio.message;
                 }
-        
-                res.render('libros_editar', {errores: errores, 
-                    libro: { id: req.params.id, titulo: req.body.titulo, 
-                        editorial: req.body.editorial, precio: req.body.precio}});
-                });        
+
+                res.render('libros_editar', {
+                    errores: errores,
+                    libro: {
+                        id: req.params.id, titulo: req.body.titulo,
+                        editorial: req.body.editorial, precio: req.body.precio
+                    }
+                });
+            });
         }
-        else    
-            res.render('error', {error: "Libro no encontrado"});
-    }).catch (error => {
-        res.render('error', {error: "Error editando libro"});
-    }); 
+        else
+            res.render('error', { error: "Libro no encontrado" });
+    }).catch(error => {
+        res.render('error', { error: "Error editando libro" });
+    });
 });
 
 module.exports = router;
