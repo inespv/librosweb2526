@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: libros-mongo-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - libros-data:/data/db
+      - /home/debian/mongo-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - libros-red
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS}
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: libros-node
+    container_name: libros-web
+    restart: unless-stopped
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    networks:
+      - libros-red
+    depends_on:
+      - mongo
+
+  proxy:
+    build: ./apache-config
+    container_name: libros-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - libros-red
+    depends_on:
+      - web
+
+volumes:
+  libros-data:
+
+networks:
+  libros-red:
+    name: libros-red
